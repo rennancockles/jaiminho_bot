@@ -1,0 +1,64 @@
+#!/usr/bin/python -B
+# -*- coding: utf-8 -*-
+
+from lib.Correios import Rastreio
+from telegram.ext import Updater, CommandHandler
+from ctypes.util import find_library
+import logging
+import ctypes
+
+libc = ctypes.CDLL(find_library('c'))
+updater = Updater(token='BOT_TOKEN')
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+dispatcher = updater.dispatcher
+libc.prctl(15, 'jaiminho')
+
+
+def handlers(commands, with_args):
+    for command in commands:
+        if command in with_args:
+            dispatcher.add_handler(CommandHandler(command, eval(command), pass_args=True))
+        else:
+            dispatcher.add_handler(CommandHandler(command, eval(command)))
+
+
+def start(bot, update):
+    bot.sendMessage(chat_id=update.message.chat_id, text="Olá, sou o Jaiminho. É que eu quero evitar a fadiga")
+
+
+def stop(bot, update):
+    bot.sendMessage(chat_id=update.message.chat_id, text="Estou voltando para Tangamandápio!")
+    updater.stop()
+
+
+def status(bot, update, args):
+    chat_id = update.message.chat_id
+
+    if args:
+        for codigo in args:
+            rastreio = Rastreio(codigo)
+            if rastreio.movimentacoes is not None:
+                msg = '*%s* \n\n%s `\n%s \n%s`' % (codigo, rastreio.movimentacoes[0].data, rastreio.movimentacoes[0].titulo, rastreio.movimentacoes[0].texto)
+                bot.sendMessage(chat_id=chat_id, text=msg, parse_mode='Markdown')
+
+
+def rastreio(bot, update, args):
+    chat_id = update.message.chat_id
+
+    if args:
+        for codigo in args:
+            rastreio = Rastreio(codigo)
+            if rastreio.movimentacoes is not None:
+                msg = '*%s*\n\n' % (codigo,)
+                for mov in rastreio.movimentacoes:
+                    msg += '%s `\n%s \n%s \n\n`' % (mov.data, mov.titulo, mov.texto)
+
+                bot.sendMessage(chat_id=chat_id, text=msg, parse_mode='Markdown')
+
+
+handlers(['start', 'stop', 'status', 'rastreio'],
+         ['status', 'rastreio'])
+updater.start_polling()
+
+
+
