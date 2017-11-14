@@ -15,9 +15,7 @@ class Rastreio(object):
             self.movimentacoes = None
 
     def isCod(self, cod):
-        if re.match('^[a-zA-Z]{2}[0-9]{9}[a-zA-Z]{2}$', cod):
-            return True
-        return False
+        return re.match('^[a-zA-Z]{2}[0-9]{9}[a-zA-Z]{2}$', cod)
 
     def isEntregue(self, obj):
         titles = [mov['title'] for mov in obj['movimentacoes']]
